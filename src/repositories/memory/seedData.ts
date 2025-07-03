@@ -9,6 +9,7 @@ import { TaskPriority } from '../../types/task.types';
 export class SeedData {
   private listRepo: ListMemoryRepository;
   private taskRepo: TaskMemoryRepository;
+  private readonly testUserId = 'test-user-001'; // Default test user for seeded data
 
   constructor() {
     this.listRepo = new ListMemoryRepository();
@@ -23,81 +24,90 @@ export class SeedData {
 
     try {
       // Create sample lists
-      const personalList = await this.listRepo.create({
-        name: 'Personal Tasks',
-        description: 'Personal todos and reminders'
-      });
+      const personalList = await this.listRepo.create(
+        {
+          name: 'Personal Tasks',
+          description: 'Personal todos and reminders'
+        },
+        this.testUserId
+      );
 
-      const workList = await this.listRepo.create({
-        name: 'Work Projects',
-        description: 'Professional tasks and project items'
-      });
+      const workList = await this.listRepo.create(
+        {
+          name: 'Work Projects',
+          description: 'Professional tasks and project items'
+        },
+        this.testUserId
+      );
 
-      const shoppingList = await this.listRepo.create({
-        name: 'Shopping List',
-        description: 'Items to buy'
-      });
+      const shoppingList = await this.listRepo.create(
+        {
+          name: 'Shopping List',
+          description: 'Items to buy'
+        },
+        this.testUserId
+      );
 
       // Create sample tasks for Personal Tasks
-      await this.taskRepo.create(personalList.id, {
+      await this.taskRepo.create(personalList.id, this.testUserId, {
         title: 'Book dentist appointment',
         description: 'Call Dr. Smith to schedule annual cleaning',
         priority: TaskPriority.HIGH,
         deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString() // 3 days from now
       });
 
-      await this.taskRepo.create(personalList.id, {
+      await this.taskRepo.create(personalList.id, this.testUserId, {
         title: 'Plan weekend trip',
         description: 'Research destinations and book accommodation',
         priority: TaskPriority.MEDIUM,
         deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 1 week from now
       });
 
-      await this.taskRepo.create(personalList.id, {
+      await this.taskRepo.create(personalList.id, this.testUserId, {
         title: 'Workout routine',
         description: 'Complete 30-minute cardio session',
         priority: TaskPriority.LOW
       });
 
       // Create sample tasks for Work Projects
-      await this.taskRepo.create(workList.id, {
+      await this.taskRepo.create(workList.id, this.testUserId, {
         title: 'Complete project proposal',
         description: 'Finalize the Q4 project proposal document',
         priority: TaskPriority.URGENT,
         deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString() // 2 days from now
       });
 
-      await this.taskRepo.create(workList.id, {
+      await this.taskRepo.create(workList.id, this.testUserId, {
         title: 'Review team performance',
         description: 'Conduct quarterly performance reviews for team members',
         priority: TaskPriority.HIGH,
         deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString() // 5 days from now
       });
 
-      await this.taskRepo.create(workList.id, {
+      await this.taskRepo.create(workList.id, this.testUserId, {
         title: 'Update documentation',
         description: 'Update API documentation with latest changes',
         priority: TaskPriority.MEDIUM
       });
 
       // Create completed task
-      const completedTask = await this.taskRepo.create(workList.id, {
+      const completedTask = await this.taskRepo.create(workList.id, this.testUserId, {
         title: 'Setup CI/CD pipeline',
         description: 'Configure automated testing and deployment',
         priority: TaskPriority.HIGH
       });
 
       // Mark task as completed
-      await this.taskRepo.updateCompletion(completedTask.id, true);
+      await this.taskRepo.updateCompletion(completedTask.id, this.testUserId, true);
 
       // Create sample tasks for Shopping List
-      await this.taskRepo.create(shoppingList.id, {
+      await this.taskRepo.create(shoppingList.id, this.testUserId, {
         title: 'Buy groceries',
         description: 'Milk, eggs, bread, vegetables',
         priority: TaskPriority.MEDIUM
       });
 
-      await this.taskRepo.create(shoppingList.id, {
+      await this.taskRepo.create(shoppingList.id, this.testUserId, {
         title: 'Pick up dry cleaning',
         description: 'Collect suits from downtown location',
         priority: TaskPriority.LOW,
@@ -105,7 +115,7 @@ export class SeedData {
       });
 
       // Create some overdue tasks for testing
-      await this.taskRepo.create(personalList.id, {
+      await this.taskRepo.create(personalList.id, this.testUserId, {
         title: 'Return library books',
         description: 'Return overdue books to local library',
         priority: TaskPriority.HIGH,

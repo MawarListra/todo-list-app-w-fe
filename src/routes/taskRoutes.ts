@@ -13,9 +13,13 @@ import {
   listIdParamSchema,
   taskIdParamSchema
 } from '../schemas/validation.schemas';
+import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 const taskController = new TaskController();
+
+// Apply authentication middleware to all routes
+router.use(authenticateToken);
 
 /**
  * @swagger

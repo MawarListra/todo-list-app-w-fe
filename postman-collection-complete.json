@@ -1,0 +1,778 @@
+{
+  "info": {
+    "name": "TODO List API - Complete Collection",
+    "description": "Comprehensive API collection for the TODO List API with authentication, lists, and tasks management.\n\n🔐 **Authentication Required**: Most endpoints require a valid JWT token in the Authorization header.\n\n📋 **Getting Started**:\n1. Run 'Register New User' to create an account\n2. Use 'Login User' to get your JWT token\n3. The token will be automatically saved and used for subsequent requests\n4. Create lists and tasks using the authenticated endpoints\n\n🎯 **Testing Flow**:\n- Authentication → Lists → Tasks → Advanced Queries",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3001",
+      "type": "string",
+      "description": "Base URL for the API server"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT authentication token (auto-populated)"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string",
+      "description": "Current user ID (auto-populated)"
+    },
+    {
+      "key": "list_id",
+      "value": "",
+      "type": "string",
+      "description": "Current list ID (auto-populated)"
+    },
+    {
+      "key": "task_id",
+      "value": "",
+      "type": "string",
+      "description": "Current task ID (auto-populated)"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "description": "User authentication endpoints - Register and login to get JWT tokens",
+      "item": [
+        {
+          "name": "Register New User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"Password123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new user account. Password must contain uppercase, lowercase, number, and special character."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.token) {",
+                  "        pm.collectionVariables.set('auth_token', response.data.token);",
+                  "        pm.collectionVariables.set('user_id', response.data.user.id);",
+                  "        console.log('✅ Registration successful, token saved');",
+                  "        console.log('👤 User ID:', response.data.user.id);",
+                  "    }",
+                  "} else {",
+                  "    console.log('❌ Registration failed:', pm.response.json());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"password\": \"Password123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with existing user credentials using email and password"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.token) {",
+                  "        pm.collectionVariables.set('auth_token', response.data.token);",
+                  "        pm.collectionVariables.set('user_id', response.data.user.id);",
+                  "        console.log('✅ Login successful, token saved');",
+                  "        console.log('👤 User ID:', response.data.user.id);",
+                  "    }",
+                  "} else {",
+                  "    console.log('❌ Login failed:', pm.response.json());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Test Authentication",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/lists",
+              "host": ["{{base_url}}"],
+              "path": ["api", "lists"]
+            },
+            "description": "Test if authentication is working by getting user's lists"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📋 Lists Management",
+      "description": "CRUD operations for todo lists - Create, read, update, delete lists",
+      "item": [
+        {
+          "name": "Get All Lists",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/lists",
+              "host": ["{{base_url}}"],
+              "path": ["api", "lists"]
+            },
+            "description": "Retrieve all todo lists for the authenticated user"
+          },
+          "response": []
+        },
+        {
+          "name": "Create New List",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My New Project\",\n  \"description\": \"Tasks for my awesome new project\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/lists",
+              "host": ["{{base_url}}"],
+              "path": ["api", "lists"]
+            },
+            "description": "Create a new todo list for the authenticated user"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.id) {",
+                  "        pm.collectionVariables.set('list_id', response.data.id);",
+                  "        console.log('✅ List created, ID saved:', response.data.id);",
+                  "    }",
+                  "} else {",
+                  "    console.log('❌ List creation failed:', pm.response.json());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Specific List",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/lists/{{list_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "lists", "{{list_id}}"]
+            },
+            "description": "Get details of a specific list by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update List",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Project Name\",\n  \"description\": \"Updated description for my project\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/lists/{{list_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "lists", "{{list_id}}"]
+            },
+            "description": "Update an existing list's name and description"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Tasks in List",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/lists/{{list_id}}/tasks",
+              "host": ["{{base_url}}"],
+              "path": ["api", "lists", "{{list_id}}", "tasks"]
+            },
+            "description": "Get all tasks within a specific list"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete List",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/lists/{{list_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "lists", "{{list_id}}"]
+            },
+            "description": "Delete a list and all its tasks"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "✅ Tasks Management",
+      "description": "CRUD operations for tasks - Create, read, update, delete tasks",
+      "item": [
+        {
+          "name": "Create Task in List",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Implement authentication\",\n  \"description\": \"Add JWT authentication to the API\",\n  \"priority\": \"high\",\n  \"deadline\": \"2025-07-10T18:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/tasks/lists/{{list_id}}/tasks",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "lists", "{{list_id}}", "tasks"]
+            },
+            "description": "Create a new task within a specific list. Priority: low, medium, high, urgent"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.id) {",
+                  "        pm.collectionVariables.set('task_id', response.data.id);",
+                  "        console.log('✅ Task created, ID saved:', response.data.id);",
+                  "    }",
+                  "} else {",
+                  "    console.log('❌ Task creation failed:', pm.response.json());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Specific Task",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/{{task_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "{{task_id}}"]
+            },
+            "description": "Get details of a specific task by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated task title\",\n  \"description\": \"Updated task description\",\n  \"priority\": \"medium\",\n  \"deadline\": \"2025-07-15T18:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/tasks/{{task_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "{{task_id}}"]
+            },
+            "description": "Update an existing task's details"
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Task as Complete",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completed\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/tasks/{{task_id}}/completion",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "{{task_id}}", "completion"]
+            },
+            "description": "Mark a task as completed (true) or incomplete (false)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Task Deadline",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deadline\": \"2025-07-20T18:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/tasks/{{task_id}}/deadline",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "{{task_id}}", "deadline"]
+            },
+            "description": "Update the deadline of a specific task"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/{{task_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "{{task_id}}"]
+            },
+            "description": "Delete a specific task"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔍 Advanced Queries & Analytics",
+      "description": "Advanced search, filtering, and analytics operations",
+      "item": [
+        {
+          "name": "Search Tasks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/search?q=test",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "test",
+                  "description": "Search query string"
+                }
+              ]
+            },
+            "description": "Search tasks by title or description content"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Task Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/{{task_id}}/statistics",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "{{task_id}}", "statistics"]
+            },
+            "description": "Get detailed statistics for a specific task"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Analytics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/analytics",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "analytics"]
+            },
+            "description": "Get comprehensive analytics for all user tasks"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Tasks Due This Week",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/due-this-week",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "due-this-week"]
+            },
+            "description": "Get all tasks due within the next 7 days"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Overdue Tasks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/overdue",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "overdue"]
+            },
+            "description": "Get all tasks that are past their deadline"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔄 Testing Scenarios",
+      "description": "Complete testing scenarios for different user workflows",
+      "item": [
+        {
+          "name": "Register Second User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser2\",\n  \"email\": \"testuser2@example.com\",\n  \"password\": \"Password123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a second user for testing user isolation"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Second User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser2@example.com\",\n  \"password\": \"Password123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with second user to test user isolation"
+          },
+          "response": []
+        },
+        {
+          "name": "Test Cross-User Access (Should Fail)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/{{task_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "{{task_id}}"]
+            },
+            "description": "Try to access first user's task with second user's token - should fail"
+          },
+          "response": []
+        },
+        {
+          "name": "Test Unauthorized Access (Should Fail)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/lists",
+              "host": ["{{base_url}}"],
+              "path": ["api", "lists"]
+            },
+            "description": "Try to access protected endpoint without token - should fail"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🏥 System Health",
+      "description": "Health check and system information endpoints",
+      "item": [
+        {
+          "name": "Basic Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Basic health check endpoint - no authentication required"
+          },
+          "response": []
+        },
+        {
+          "name": "API Information",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api",
+              "host": ["{{base_url}}"],
+              "path": ["api"]
+            },
+            "description": "Get API version and available endpoints"
+          },
+          "response": []
+        },
+        {
+          "name": "OpenAPI Documentation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/docs",
+              "host": ["{{base_url}}"],
+              "path": ["docs"]
+            },
+            "description": "Access Swagger/OpenAPI documentation"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

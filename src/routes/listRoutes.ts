@@ -6,9 +6,13 @@ import { Router } from 'express';
 import { ListController } from '../controllers/listController';
 import { validateBody, validateParams, validateOptionalQuery } from '../middleware/validation';
 import { createListSchema, updateListSchema, uuidParamSchema } from '../schemas/validation.schemas';
+import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 const listController = new ListController();
+
+// Apply authentication middleware to all routes
+router.use(authenticateToken);
 
 /**
  * @swagger

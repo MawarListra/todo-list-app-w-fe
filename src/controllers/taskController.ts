@@ -69,8 +69,9 @@ export class TaskController {
     try {
       const { listId } = req.params as { listId: string };
       const createData: CreateTaskRequest = req.body;
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const task = await this.taskService.createTask(listId, createData);
+      const task = await this.taskService.createTask(listId, userId, createData);
 
       const response: ApiResponse<TaskResponse> = {
         data: task,
@@ -127,8 +128,9 @@ export class TaskController {
   async getTaskById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { taskId } = req.params as { taskId: string };
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const task = await this.taskService.getTaskById(taskId);
+      const task = await this.taskService.getTaskById(taskId, userId);
 
       const response: ApiResponse<TaskResponse> = {
         data: task,
@@ -194,8 +196,9 @@ export class TaskController {
     try {
       const { taskId } = req.params as { taskId: string };
       const updateData: UpdateTaskRequest = req.body;
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const task = await this.taskService.updateTask(taskId, updateData);
+      const task = await this.taskService.updateTask(taskId, userId, updateData);
 
       const response: ApiResponse<TaskResponse> = {
         data: task,
@@ -256,8 +259,9 @@ export class TaskController {
   async deleteTask(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { taskId } = req.params as { taskId: string };
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const deleted = await this.taskService.deleteTask(taskId);
+      const deleted = await this.taskService.deleteTask(taskId, userId);
 
       const response: ApiResponse<{ deleted: boolean }> = {
         data: { deleted },
@@ -330,8 +334,9 @@ export class TaskController {
     try {
       const { taskId } = req.params as { taskId: string };
       const { deadline } = req.body as { deadline: string };
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const task = await this.taskService.updateTaskDeadline(taskId, deadline);
+      const task = await this.taskService.updateTaskDeadline(taskId, userId, deadline);
 
       const response: ApiResponse<TaskResponse> = {
         data: task,
@@ -403,8 +408,9 @@ export class TaskController {
     try {
       const { taskId } = req.params as { taskId: string };
       const { completed } = req.body as { completed: boolean };
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const task = await this.taskService.updateTaskCompletion(taskId, completed);
+      const task = await this.taskService.updateTaskCompletion(taskId, userId, completed);
 
       const response: ApiResponse<TaskResponse> = {
         data: task,
@@ -481,8 +487,9 @@ export class TaskController {
   async getTaskStatistics(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { taskId } = req.params as { taskId: string };
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const statistics = await this.taskService.getTaskStatistics(taskId);
+      const statistics = await this.taskService.getTaskStatistics(taskId, userId);
 
       const response: ApiResponse<typeof statistics> = {
         data: statistics,

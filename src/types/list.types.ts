@@ -5,6 +5,8 @@
 export interface List {
   /** Unique identifier for the list */
   id: string;
+  /** ID of the user who owns this list */
+  userId: string;
   /** Display name of the list */
   name: string;
   /** Optional description of the list */

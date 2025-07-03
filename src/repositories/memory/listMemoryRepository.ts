@@ -14,10 +14,11 @@ export class ListMemoryRepository implements IListRepository {
     this.store = MemoryStore.getInstance();
   }
 
-  async create(listData: CreateListRequest): Promise<List> {
+  async create(listData: CreateListRequest, userId: string): Promise<List> {
     const now = new Date();
     const list: List = {
       id: uuidv4(),
+      userId,
       name: listData.name,
       ...(listData.description !== undefined && { description: listData.description }),
       createdAt: now,
@@ -28,20 +29,23 @@ export class ListMemoryRepository implements IListRepository {
     return list;
   }
 
-  async findById(id: string): Promise<List | null> {
+  async findById(id: string, userId: string): Promise<List | null> {
     const list = this.store.getList(id);
-    return list || null;
+    if (!list || list.userId !== userId) {
+      return null;
+    }
+    return list;
   }
 
-  async findAll(): Promise<List[]> {
-    return Array.from(this.store.getLists().values()).sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-    );
+  async findAll(userId: string): Promise<List[]> {
+    return Array.from(this.store.getLists().values())
+      .filter(list => list.userId === userId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
-  async update(id: string, updateData: UpdateListRequest): Promise<List | null> {
+  async update(id: string, userId: string, updateData: UpdateListRequest): Promise<List | null> {
     const existingList = this.store.getList(id);
-    if (!existingList) {
+    if (!existingList || existingList.userId !== userId) {
       return null;
     }
 
@@ -56,10 +60,10 @@ export class ListMemoryRepository implements IListRepository {
     return updatedList;
   }
 
-  async delete(id: string): Promise<boolean> {
-    // First check if the list exists
+  async delete(id: string, userId: string): Promise<boolean> {
+    // First check if the list exists and belongs to the user
     const exists = this.store.getList(id);
-    if (!exists) {
+    if (!exists || exists.userId !== userId) {
       return false;
     }
 
@@ -70,11 +74,17 @@ export class ListMemoryRepository implements IListRepository {
     return this.store.deleteList(id);
   }
 
-  async exists(id: string): Promise<boolean> {
-    return this.store.getList(id) !== undefined;
+  async exists(id: string, userId: string): Promise<boolean> {
+    const list = this.store.getList(id);
+    return list !== undefined && list.userId === userId;
   }
 
-  async getTaskCount(listId: string): Promise<number> {
-    return this.store.getTasksByListId(listId).length;
+  async getTaskCount(listId: string, userId: string): Promise<number> {
+    // Verify the list belongs to the user before counting tasks
+    const list = this.store.getList(listId);
+    if (!list || list.userId !== userId) {
+      return 0;
+    }
+    return this.store.getTasksByListId(listId).filter(task => task.userId === userId).length;
   }
 }

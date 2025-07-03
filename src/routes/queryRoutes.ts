@@ -6,9 +6,13 @@ import { Router } from 'express';
 import { QueryController } from '../controllers/queryController';
 import { validateOptionalQuery } from '../middleware/validation';
 import { taskQuerySchema } from '../schemas/validation.schemas';
+import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 const queryController = new QueryController();
+
+// Apply authentication middleware to all routes
+router.use(authenticateToken);
 
 /**
  * @swagger

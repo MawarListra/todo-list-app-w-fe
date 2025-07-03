@@ -25,9 +25,14 @@ export default defineConfig({
         'pg',
         'dotenv',
         'winston',
+        'jsonwebtoken',
+        'bcryptjs',
         'fs',
         'path',
-        'url'
+        'url',
+        'crypto',
+        'util',
+        'stream'
       ]
     },
     target: 'node18',

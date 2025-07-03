@@ -21,11 +21,12 @@ export class TaskMemoryRepository implements ITaskRepository {
     this.store = MemoryStore.getInstance();
   }
 
-  async create(listId: string, taskData: CreateTaskRequest): Promise<Task> {
+  async create(listId: string, userId: string, taskData: CreateTaskRequest): Promise<Task> {
     const now = new Date();
     const task: Task = {
       id: uuidv4(),
       listId,
+      userId,
       title: taskData.title,
       ...(taskData.description !== undefined && { description: taskData.description }),
       completed: false,
@@ -39,21 +40,25 @@ export class TaskMemoryRepository implements ITaskRepository {
     return task;
   }
 
-  async findById(id: string): Promise<Task | null> {
+  async findById(id: string, userId: string): Promise<Task | null> {
     const task = this.store.getTask(id);
-    return task || null;
+    if (!task || task.userId !== userId) {
+      return null;
+    }
+    return task;
   }
 
-  async findByListId(listId: string): Promise<Task[]> {
+  async findByListId(listId: string, userId: string): Promise<Task[]> {
     return this.store
       .getTasksByListId(listId)
+      .filter(task => task.userId === userId)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
-  async findByQuery(query: TaskQuery, listId?: string): Promise<Task[]> {
+  async findByQuery(query: TaskQuery, userId: string, listId?: string): Promise<Task[]> {
     let tasks = listId
-      ? this.store.getTasksByListId(listId)
-      : Array.from(this.store.getTasks().values());
+      ? this.store.getTasksByListId(listId).filter(task => task.userId === userId)
+      : Array.from(this.store.getTasks().values()).filter(task => task.userId === userId);
 
     // Apply filters
     if (query.completed !== undefined) {
@@ -125,9 +130,9 @@ export class TaskMemoryRepository implements ITaskRepository {
     return tasks.slice(startIndex, endIndex);
   }
 
-  async update(id: string, updateData: UpdateTaskRequest): Promise<Task | null> {
+  async update(id: string, userId: string, updateData: UpdateTaskRequest): Promise<Task | null> {
     const existingTask = this.store.getTask(id);
-    if (!existingTask) {
+    if (!existingTask || existingTask.userId !== userId) {
       return null;
     }
 
@@ -152,9 +157,9 @@ export class TaskMemoryRepository implements ITaskRepository {
     return updatedTask;
   }
 
-  async updateCompletion(id: string, completed: boolean): Promise<Task | null> {
+  async updateCompletion(id: string, userId: string, completed: boolean): Promise<Task | null> {
     const existingTask = this.store.getTask(id);
-    if (!existingTask) {
+    if (!existingTask || existingTask.userId !== userId) {
       return null;
     }
 
@@ -176,9 +181,9 @@ export class TaskMemoryRepository implements ITaskRepository {
     return updatedTask;
   }
 
-  async updateDeadline(id: string, deadline: Date): Promise<Task | null> {
+  async updateDeadline(id: string, userId: string, deadline: Date): Promise<Task | null> {
     const existingTask = this.store.getTask(id);
-    if (!existingTask) {
+    if (!existingTask || existingTask.userId !== userId) {
       return null;
     }
 
@@ -192,25 +197,41 @@ export class TaskMemoryRepository implements ITaskRepository {
     return updatedTask;
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(id: string, userId: string): Promise<boolean> {
+    const existingTask = this.store.getTask(id);
+    if (!existingTask || existingTask.userId !== userId) {
+      return false;
+    }
     return this.store.deleteTask(id);
   }
 
-  async deleteByListId(listId: string): Promise<number> {
-    return this.store.deleteTasksByListId(listId);
+  async deleteByListId(listId: string, userId: string): Promise<number> {
+    // First, get all tasks for the list that belong to the user
+    const tasks = this.store.getTasksByListId(listId).filter(task => task.userId === userId);
+    let deletedCount = 0;
+
+    for (const task of tasks) {
+      if (this.store.deleteTask(task.id)) {
+        deletedCount++;
+      }
+    }
+
+    return deletedCount;
   }
 
-  async exists(id: string): Promise<boolean> {
-    return this.store.getTask(id) !== undefined;
+  async exists(id: string, userId: string): Promise<boolean> {
+    const task = this.store.getTask(id);
+    return task !== undefined && task.userId === userId;
   }
 
-  async findDueThisWeek(): Promise<Task[]> {
+  async findDueThisWeek(userId: string): Promise<Task[]> {
     const now = new Date();
     const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
     return Array.from(this.store.getTasks().values())
       .filter(
         task =>
+          task.userId === userId &&
           task.deadline &&
           task.deadline >= now &&
           task.deadline <= oneWeekFromNow &&
@@ -222,7 +243,7 @@ export class TaskMemoryRepository implements ITaskRepository {
       });
   }
 
-  async countByListId(listId: string): Promise<number> {
-    return this.store.getTasksByListId(listId).length;
+  async countByListId(listId: string, userId: string): Promise<number> {
+    return this.store.getTasksByListId(listId).filter(task => task.userId === userId).length;
   }
 }

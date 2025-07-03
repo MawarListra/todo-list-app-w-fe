@@ -64,8 +64,9 @@ export class ListController {
   async getAllLists(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const includeTaskCount = req.query.includeTaskCount !== 'false';
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const lists = await this.listService.getAllLists(includeTaskCount);
+      const lists = await this.listService.getAllLists(userId, includeTaskCount);
 
       const response: ApiResponse<ListResponse[]> = {
         data: lists,
@@ -120,8 +121,9 @@ export class ListController {
   async createList(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const createData: CreateListRequest = req.body;
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const list = await this.listService.createList(createData);
+      const list = await this.listService.createList(createData, userId);
 
       const response: ApiResponse<ListResponse> = {
         data: list,
@@ -185,8 +187,9 @@ export class ListController {
     try {
       const { listId } = req.params as { listId: string };
       const includeTaskCount = req.query.includeTaskCount !== 'false';
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const list = await this.listService.getListById(listId, includeTaskCount);
+      const list = await this.listService.getListById(listId, userId, includeTaskCount);
 
       const response: ApiResponse<ListResponse> = {
         data: list,
@@ -243,8 +246,9 @@ export class ListController {
   async getListWithTasks(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { listId } = req.params as { listId: string };
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const listWithTasks = await this.listService.getListWithTasks(listId);
+      const listWithTasks = await this.listService.getListWithTasks(listId, userId);
 
       const response: ApiResponse<ListWithTasks> = {
         data: listWithTasks,
@@ -310,8 +314,9 @@ export class ListController {
     try {
       const { listId } = req.params as { listId: string };
       const updateData: UpdateListRequest = req.body;
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const list = await this.listService.updateList(listId, updateData);
+      const list = await this.listService.updateList(listId, userId, updateData);
 
       const response: ApiResponse<ListResponse> = {
         data: list,
@@ -372,8 +377,9 @@ export class ListController {
   async deleteList(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { listId } = req.params as { listId: string };
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const deleted = await this.listService.deleteList(listId);
+      const deleted = await this.listService.deleteList(listId, userId);
 
       const response: ApiResponse<{ deleted: boolean }> = {
         data: { deleted },
@@ -447,8 +453,9 @@ export class ListController {
   async getListStatistics(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { listId } = req.params as { listId: string };
+      const userId = req.user!.userId; // Get user ID from authenticated request
 
-      const statistics = await this.listService.getListStatistics(listId);
+      const statistics = await this.listService.getListStatistics(listId, userId);
 
       const response: ApiResponse<typeof statistics> = {
         data: statistics,

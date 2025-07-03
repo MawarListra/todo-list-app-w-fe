@@ -15,6 +15,7 @@ import listRoutes from './routes/listRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 import queryRoutes from './routes/queryRoutes.js';
 import healthRoutes from './routes/health.js';
+import authRoutes from './routes/authRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -117,6 +118,7 @@ export class App {
         documentation: '/docs',
         endpoints: {
           health: '/health',
+          auth: '/api/auth',
           lists: '/api/lists',
           tasks: '/api/tasks',
           docs: '/docs'
@@ -134,6 +136,7 @@ export class App {
     });
 
     // Route modules
+    this.app.use('/api/auth', authRoutes);
     this.app.use('/api/lists', listRoutes);
     this.app.use('/api/tasks', taskRoutes);
     this.app.use('/api/tasks', queryRoutes);

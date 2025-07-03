@@ -7,6 +7,8 @@ export interface Task {
   id: string;
   /** ID of the list this task belongs to */
   listId: string;
+  /** ID of the user who owns this task */
+  userId: string;
   /** Title of the task */
   title: string;
   /** Optional detailed description of the task */
