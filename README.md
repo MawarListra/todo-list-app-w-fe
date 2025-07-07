@@ -205,7 +205,7 @@ DATABASE_PASSWORD=password
 
 # 🔒 Security Configuration
 JWT_SECRET=your-super-secret-jwt-key
-CORS_ORIGIN=http://localhost:3000
+CORS_ORIGIN=http://localhost:3001
 
 # 📊 Application Settings
 REPOSITORY_TYPE=memory              # 'memory' or 'sql'
